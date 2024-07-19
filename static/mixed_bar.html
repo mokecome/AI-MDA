@@ -1,0 +1,405 @@
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+</head>
+<div id="chart" style="width: 100%; height: 500px;"></div>
+<script>
+  var chart = echarts.init(document.getElementById('chart'), 'white', { renderer: 'canvas' });
+  var option = {
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+      "enabled": false
+    },
+    "color": [
+      "#5470c6",
+      "#91cc75",
+      "#fac858",
+      "#ee6666",
+      "#73c0de",
+      "#3ba272",
+      "#fc8452",
+      "#9a60b4",
+      "#ea7ccc"
+    ],
+    "series": [
+      {
+        "type": "bar",
+        "name": "B肝帶原",
+        "legendHoverLink": true,
+        "data": [
+          134,
+          245,
+          200,
+          150,
+          407,
+          910,
+          631,
+          530,
+          462,
+          314,
+          194,
+          56
+        ],
+        "realtimeSort": false,
+        "showBackground": false,
+        "stackStrategy": "samesign",
+        "cursor": "pointer",
+        "barMinHeight": 0,
+        "barCategoryGap": "20%",
+        "barGap": "30%",
+        "large": false,
+        "largeThreshold": 400,
+        "seriesLayoutBy": "column",
+        "datasetIndex": 0,
+        "clip": true,
+        "zlevel": 0,
+        "z": 2,
+        "label": {
+          "show": false,
+          "margin": 8
+        }
+      },
+      {
+        "type": "bar",
+        "name": "C肝帶原",
+        "legendHoverLink": true,
+        "data": [
+          47,
+          59,
+          26,
+          38,
+          70,
+          176,
+          178,
+          152,
+          195,
+          133,
+          58,
+          10
+        ],
+        "realtimeSort": false,
+        "showBackground": false,
+        "stackStrategy": "samesign",
+        "cursor": "pointer",
+        "barMinHeight": 0,
+        "barCategoryGap": "20%",
+        "barGap": "30%",
+        "large": false,
+        "largeThreshold": 400,
+        "seriesLayoutBy": "column",
+        "datasetIndex": 0,
+        "clip": true,
+        "zlevel": 0,
+        "z": 2,
+        "label": {
+          "show": false,
+          "margin": 8
+        }
+      },
+      {
+        "type": "bar",
+        "name": "B+C肝帶原",
+        "legendHoverLink": true,
+        "data": [
+          2,
+          5,
+          3,
+          3,
+          3,
+          16,
+          18,
+          11,
+          8,
+          13,
+          6,
+          2
+        ],
+        "realtimeSort": false,
+        "showBackground": false,
+        "stackStrategy": "samesign",
+        "cursor": "pointer",
+        "barMinHeight": 0,
+        "barCategoryGap": "20%",
+        "barGap": "30%",
+        "large": false,
+        "largeThreshold": 400,
+        "seriesLayoutBy": "column",
+        "datasetIndex": 0,
+        "clip": true,
+        "zlevel": 0,
+        "z": 2,
+        "label": {
+          "show": false,
+          "margin": 8
+        }
+      },
+      {
+        "type": "line",
+        "name": "累積總和",
+        "connectNulls": false,
+        "xAxisIndex": 0,
+        "yAxisIndex": 1,
+        "symbolSize": 4,
+        "showSymbol": true,
+        "smooth": false,
+        "clip": true,
+        "step": false,
+        "stackStrategy": "samesign",
+        "data": [
+          [
+            "2011",
+            183
+          ],
+          [
+            "2012",
+            492
+          ],
+          [
+            "2013",
+            721
+          ],
+          [
+            "2014",
+            912
+          ],
+          [
+            "2015",
+            1392
+          ],
+          [
+            "2016",
+            2494
+          ],
+          [
+            "2017",
+            3321
+          ],
+          [
+            "2018",
+            4014
+          ],
+          [
+            "2019",
+            4679
+          ],
+          [
+            "2020",
+            5139
+          ],
+          [
+            "2021",
+            5397
+          ],
+          [
+            "2022",
+            5465
+          ]
+        ],
+        "hoverAnimation": true,
+        "label": {
+          "show": false,
+          "margin": 8
+        },
+        "logBase": 10,
+        "seriesLayoutBy": "column",
+        "lineStyle": {
+          "show": true,
+          "width": 1,
+          "opacity": 1,
+          "curveness": 0,
+          "type": "solid"
+        },
+        "areaStyle": {
+          "opacity": 0
+        },
+        "zlevel": 0,
+        "z": 0
+      }
+    ],
+    "legend": [
+      {
+        "data": [
+          "B肝帶原",
+          "C肝帶原",
+          "B+C肝帶原",
+          "累積總和"
+        ],
+        "selected": {},
+        "show": true,
+        "padding": 5,
+        "itemGap": 10,
+        "itemWidth": 25,
+        "itemHeight": 14,
+        "backgroundColor": "transparent",
+        "borderColor": "#ccc",
+        "borderRadius": 0,
+        "pageButtonItemGap": 5,
+        "pageButtonPosition": "end",
+        "pageFormatter": "{current}/{total}",
+        "pageIconColor": "#2f4554",
+        "pageIconInactiveColor": "#aaa",
+        "pageIconSize": 15,
+        "animationDurationUpdate": 800,
+        "selector": false,
+        "selectorPosition": "auto",
+        "selectorItemGap": 7,
+        "selectorButtonGap": 10
+      }
+    ],
+    "tooltip": {
+      "show": true,
+      "trigger": "axis",
+      "triggerOn": "mousemove|click",
+      "axisPointer": {
+        "type": "cross"
+      },
+      "showContent": true,
+      "alwaysShowContent": false,
+      "showDelay": 0,
+      "hideDelay": 100,
+      "enterable": false,
+      "confine": false,
+      "appendToBody": false,
+      "transitionDuration": 0.4,
+      "textStyle": {
+        "fontSize": 14
+      },
+      "borderWidth": 0,
+      "padding": 5,
+      "order": "seriesAsc"
+    },
+    "xAxis": [
+      {
+        "type": "category",
+        "show": true,
+        "scale": false,
+        "nameLocation": "end",
+        "nameGap": 15,
+        "gridIndex": 0,
+        "axisLabel": {
+          "show": true,
+          "rotate": 0,
+          "margin": 8
+        },
+        "axisPointer": {
+          "show": true,
+          "type": "shadow",
+          "triggerTooltip": true,
+          "triggerOn": "mousemove|click"
+        },
+        "inverse": false,
+        "offset": 0,
+        "splitNumber": 5,
+        "minInterval": 0,
+        "splitLine": {
+          "show": true,
+          "lineStyle": {
+            "show": true,
+            "width": 1,
+            "opacity": 1,
+            "curveness": 0,
+            "type": "solid"
+          }
+        },
+        "data": [
+          "2011",
+          "2012",
+          "2013",
+          "2014",
+          "2015",
+          "2016",
+          "2017",
+          "2018",
+          "2019",
+          "2020",
+          "2021",
+          "2022"
+        ]
+      }
+    ],
+    "yAxis": [
+      {
+        "type": "value",
+        "name": "數量",
+        "show": true,
+        "scale": false,
+        "nameLocation": "end",
+        "nameGap": 15,
+        "interval": 100,
+        "gridIndex": 0,
+        "axisLabel": {
+          "show": true,
+          "margin": 8,
+          "formatter": "{value}"
+        },
+        "inverse": false,
+        "offset": 0,
+        "splitNumber": 5,
+        "min": 0,
+        "max": 1018,
+        "minInterval": 0,
+        "splitLine": {
+          "show": true,
+          "lineStyle": {
+            "show": true,
+            "width": 1,
+            "opacity": 1,
+            "curveness": 0,
+            "type": "solid"
+          }
+        }
+      },
+      {
+        "type": "value",
+        "name": "累積總和",
+        "show": true,
+        "scale": false,
+        "nameLocation": "end",
+        "nameGap": 15,
+        "interval": 500,
+        "gridIndex": 0,
+        "axisLabel": {
+          "show": true,
+          "margin": 8,
+          "formatter": "{value}"
+        },
+        "inverse": false,
+        "offset": 0,
+        "splitNumber": 5,
+        "min": 0,
+        "max": 5470,
+        "minInterval": 0,
+        "splitLine": {
+          "show": true,
+          "lineStyle": {
+            "show": true,
+            "width": 1,
+            "opacity": 1,
+            "curveness": 0,
+            "type": "solid"
+          }
+        }
+      }
+    ],
+    "title": [
+      {
+        "show": true,
+        "target": "blank",
+        "subtarget": "blank",
+        "padding": 5,
+        "itemGap": 10,
+        "textAlign": "auto",
+        "textVerticalAlign": "auto",
+        "triggerEvent": false
+      }
+    ]
+  };
+  chart.setOption(option);
+</script>

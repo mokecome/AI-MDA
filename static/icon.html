@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rive 動畫示例</title>
+    <script src="https://unpkg.com/@rive-app/canvas@2.9.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+</head>
+
+<body>
+    <div id="app">
+        <canvas id="riveCanvas" width="800" height="600"></canvas>
+        <button @click="switchAnimation">切換動畫</button>
+        <!-- <button @click="togglePlay">停止或播放</button> -->
+    </div>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                rive: null,
+                animationName: 'exampleAnimation' // 修改成您的動畫名稱
+            },
+            mounted() {
+                this.rive = new rive.Rive({
+                    src: 'path/to/your/file.riv', // 修改成您的Rive文件路徑
+                    canvas: document.getElementById('riveCanvas'),
+                    autoplay: true
+                });
+            },
+            methods: {
+                switchAnimation() {
+                    this.animationName = this.animationName === 'exampleAnimation' ? 'anotherAnimation' : 'exampleAnimation';
+                    this.rive.play(this.animationName);
+                },
+                togglePlay() {
+                    if (this.rive.isPlaying) {
+                        this.rive.pause();
+                    } else {
+                        this.rive.play();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rive 動畫示例</title>
+    <script src="https://unpkg.com/@rive-app/canvas@2.9.1"></script>
+</head>
+<body>
+    <canvas id="riveCanvas" width="800" height="600"></canvas>
+    <button id="switchButton">切換動畫</button>
+    <!-- <button id="playSwitch">停止或播放</button> -->
+    <script src="main.js"></script>
+</body>
+</html> -->

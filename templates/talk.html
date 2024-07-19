@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="static/logo.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/@rive-app/canvas@2.9.1"></script>
+  <style>
+    body {
+      font-family: "Noto Sans TC", sans-serif;
+    }
+
+    .canvas-style {
+      width: 630px;
+      height: auto;
+      image-rendering: optimizeQuality;
+    }
+
+    #dialogBox {
+      position: relative;
+    }
+
+    #responseText {
+      color: black;
+      font-size: 1.2em;
+      width: 300px;
+      margin-left: 6px;
+      max-height: 100%;
+      /* 高度不会超过父容器 */
+      overflow-y: auto;
+      /* 内容超出时可以滚动 */
+      white-space: pre-wrap;
+      /* 文字自动换行 */
+    }
+  </style>
+</head>
+
+<body>
+  <div class="min-h-screen flex flex-col">
+    <header class="flex items-center justify-center p-4 border-b">
+      <div class="flex items-center">
+        <img src="static/logo.png" alt="AI-MDA Logo" class="h-10 w-auto" />
+      </div>
+      <!-- <nav class="flex items-center space-x-4">
+        <button class="text-gray-700" onclick="navigateHome()">Home</button>
+        <a class="text-gray-700" href="#"> About </a>
+        <div class="relative"></div>
+      </nav> -->
+    </header>
+
+    <main class="flex-grow">
+      <section class="flex flex-col justify-center items-center space-y-8 py-12">
+        <div class="text-center">
+          <h1 class="text-2xl font-bold mb-2">AI機器人</h1>
+          <h2 class="text-m">
+            請以語音方式說明問題，AI將會回覆您所需要的內容。
+          </h2>
+          <div class="flex flex-col items-center justify-center w-full">
+            <div class="flex justify-center items-center w-full mb-4">
+              <canvas id="riveCanvas" class="canvas-style" width="1600" height="900"></canvas>
+              <div class="relative">
+                <img src="static/dialog_box.png" alt="dialogBox" style="height: 330px;" class="w-auto ml-4" />
+                <div id="responseText" class="absolute top-0 ml-4 overflow-y-auto h-full"></div>
+              </div>
+            </div>
+            <div class="flex justify-center w-full mt-4">
+              <button id="switchButton" onclick="startRecording()">
+                <img src="static/rec.png" alt="voice_rec" class="h-auto w-20" />
+              </button>
+            </div>
+          </div>
+      </section>
+    </main>
+    <footer class="flex justify-between items-center p-4 border-t text-sm">
+      <div class="text-gray-600 pl-2">中文(繁體)</div>
+      <div class="text-gray-600 pr-2">
+        © 2024 Meeting Assistant. All Rights Reserved.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    let riveInstance = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let responseTextElement = document.getElementById("responseText");
+
+    function startRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        return;
+      }
+
+      // navigator.mediaDevices.getUserMedia({ audio: true })
+      //   .then((stream) => {
+      //     if (riveInstance) {
+      //       riveInstance.load({
+      //         src: "static/actionA_nurse.riv",
+      //         canvas: document.getElementById("riveCanvas"),
+      //         autoplay: true,
+      //       });
+      //     }
+
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+          console.log("開始錄音，切換到 actionAAnimation");
+          switchAnimation("actionAAnimation");
+
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.start();
+          audioChunks = [];
+          mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+          };
+
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+
+            // 检查录音的 Blob 大小
+            console.log(`Audio blob size: ${audioBlob.size} bytes`);
+
+            // 保存录音文件到本地
+            const url = URL.createObjectURL(audioBlob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'recording.wav';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            // 发送录音文件到服务器
+            const formData = new FormData();
+            formData.append('audio', audioBlob);
+
+            fetch('/api/speech_to_text', {
+              method: 'POST',
+              body: formData
+            })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+              })
+              .then(data => {
+                responseTextElement.innerText = data.response_text;
+
+                //   const audio = new Audio('/recording/response.wav');
+                //   // const audio = new Audio(data.audio_file);
+                //   audio.play();
+                //   if (riveInstance) {
+                //     riveInstance.load({
+                //       src: "static/actionB_nurse.riv",
+                //       canvas: document.getElementById("riveCanvas"),
+                //       autoplay: true,
+                //     });
+                //   }
+                // })
+                const audio = new Audio('/recording/response.wav');
+                audio.play();
+                console.log("LLM 回覆中，切換到 actionBAnimation");
+                switchAnimation("actionBAnimation");
+              })
+
+              .catch(error => {
+                console.error('Error:', error);
+              });
+          };
+        })
+        .catch(error => {
+          console.error('Error accessing microphone:', error);
+        });
+    }
+
+    function navigateHome() {
+      window.location.href = "/index.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const canvas = document.getElementById("riveCanvas");
+      const context = canvas.getContext('2d');
+      context.imageSmoothingEnabled = true; // 启用图像平滑
+      context.imageSmoothingQuality = 'high'; // 设置图像平滑质量
+
+      riveInstance = new rive.Rive({
+        src: "static/Idle_nurse.riv",
+        canvas: canvas,
+        autoplay: false,
+        stateMachines: ["MyStateMachine"],
+        onLoad: () => {
+          console.log("Rive 文件加載完成");
+          riveInstance.play("idleAnimation");
+        }
+      });
+    });
+
+    function switchAnimation(animationName) {
+      if (riveInstance) {
+        console.log("切換動畫 : " + animationName);
+
+        // 停止當前動畫
+        riveInstance.pause();
+
+        // 播放新動畫
+        riveInstance.play(animationName);
+      } else {
+        console.error("Rive 實例未初始化");
+      }
+    }
+    // function switchAnimation(animationName) {
+    //   if (riveInstance) {
+    //     console.log("switchAnimation : " + animationName)
+    //     // riveInstance.play(animationName);
+
+    //     riveInstance.reset({
+    //       stateMachines: ["MyStateMachine"],
+    //       autoplay: true,
+    //     });
+
+    //     riveInstance.play(animationName);
+    //   } else {
+    //     console.error("Rive 實例未初始化");
+    //   }
+    // }
+
+    //--------------------------------------------------------------------------------
+    // function switchAnimation() {
+    //     console.log("switchAnimation0 : "+ animationName)
+    //     const currentAnimation = riveInstance.playing;
+    //     const newAnimation = currentAnimation === "exampleAnimation" ? "anotherAnimation" : "exampleAnimation";
+    //     riveInstance.play(newAnimation);
+    //   }
+
+    // function switchAnimation(src) {
+    //   if (riveInstance) {
+    //     riveInstance.cleanup();
+    //     riveInstance = new rive.Rive({
+    //       src: src,
+    //       canvas: document.getElementById("riveCanvas"),
+    //       autoplay: true,
+    //     });
+    //   }
+    // }
+  </script>
+</body>
+
+</html>

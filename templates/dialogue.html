@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="static/logo.png">
+    <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: "Noto Sans TC", sans-serif;
+        padding-bottom: 120px;
+      }
+
+      .fixed-input-container {
+        position: fixed;
+        bottom: 50px;
+        left: 0;
+        width: 100%;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        z-index: 1000;
+      }
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: white;
+      }
+      .fixed-sidebar {
+        position: absolute;
+        top: 120px; 
+        right: 20px;
+        width: 20%;
+      }
+      .message-container {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+      }
+
+      .message-container.user {
+        justify-content: flex-end;
+      }
+
+      .message-bubble {
+        max-width: 60%;
+        padding: 0.75rem;
+        border-radius: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .message-bubble.user {
+        background-color: #e0f7fa;
+        text-align: right;
+        margin-left: auto;
+      }
+
+      .message-bubble.bot {
+        background-color: #f1f1f1;
+        text-align: left;
+        margin-right: auto;
+      }
+
+      .message-avatar {
+        width: 3rem;
+        height: 3rem;
+        margin-right: 1rem;
+        border-radius: 50%;
+      }
+
+      .message-container.user .message-avatar {
+        margin-left: 1rem;
+        margin-right: 0;
+      }
+      .message-container.bot {
+        justify-content: flex-start;
+      }
+      .shadow-md {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .border {
+        border-width: 1px;
+        border-color: #d1d5db;
+      }
+      .transition {
+        transition: background-color 0.3s ease;
+      }
+      .duration-300 {
+        transition-duration: 300ms;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="min-h-screen flex flex-col" id="app">
+      <header class="flex items-center justify-between p-4 bg-gray-100 w-full top-0 z-10 h-12 shadow-md">
+        <div class="flex items-center pl-2">
+          <img src="static/logo.png" alt="AI-MDA Logo" class="h-9 w-auto">
+        </div>
+        <nav class="flex items-center space-x-4 pr-2">
+          <button class="text-gray-700" onclick="navigateHome()">Home</button>
+          <a class="text-gray-700" href="#">About</a>
+        </nav>
+      </header>
+      <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="text-center mb-8" id="welcome-section">
+          <h1 class="text-4xl font-bold mb-2">Welcome to AI-MDA !</h1>
+          <p class="text-gray-600">
+            歡迎來到AI醫療數據自動化生成器，我們將藉由AI幫助您快速整理醫療數據。
+          </p>
+        </div>
+        <div id="messages-container"></div>
+        <aside class="fixed-sidebar bg-gray-200 p-4 rounded-lg shadow-md">
+          <h2 class="text-lg font-bold mb-4">常用標籤</h2>
+          <div class="space-y-2">
+            <button onclick="handleButtonClick('男女比例')" class="bg-white px-4 py-2 rounded-full shadow-md">男女比例</button>
+            <button onclick="handleButtonClick('B型肝炎人數')" class="bg-white px-4 py-2 rounded-full shadow-md">B型肝炎人數</button>
+            <button onclick="handleButtonClick('來客率')" class="bg-white px-4 py-2 rounded-full shadow-md">來客率</button>
+          </div>
+        </aside>
+      </main>
+      <div class="fixed-input-container">
+        <input id="user-input" class="w-3/4 bg-white p-3 rounded-full shadow-md border border-gray-300" placeholder="請輸入您想要詢問的內容" type="text">
+        <button onclick="sendMessage()" class="ml-4 bg-blue-500 text-white p-4 rounded-full shadow-md hover:bg-blue-600 transition duration-300">
+          <i class="fas fa-arrow-up"></i>
+        </button>
+      </div>
+      <footer class="footer py-4 shadow-md">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+          <span class="text-gray-600">中文(繁體)</span>
+          <span class="text-gray-600">© 2024 Meeting Assistant, All Rights Reserved.</span>
+        </div>
+      </footer>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const userInput = document.getElementById('user-input');
+        const messagesContainer = document.getElementById('messages-container');
+        const welcomeSection = document.getElementById('welcome-section');
+
+        const messages = [];
+
+        function addMessage(text, sender) {
+          const messageContainer = document.createElement('div');
+          messageContainer.classList.add('message-container', sender);
+
+          const messageBubble = document.createElement('div');
+          messageBubble.classList.add('message-bubble', sender);
+          messageBubble.textContent = text;
+
+          if (sender === 'bot') {
+            const botAvatar = document.createElement('img');
+            botAvatar.src = 'static/bot-image.png';
+            botAvatar.alt = 'Bot';
+            botAvatar.classList.add('message-avatar');
+            messageContainer.appendChild(botAvatar);
+          }
+
+          messageContainer.appendChild(messageBubble);
+
+          if (sender === 'user') {
+            const userAvatar = document.createElement('img');
+            userAvatar.src = 'static/user-image.png';
+            userAvatar.alt = 'User';
+            userAvatar.classList.add('message-avatar');
+            messageContainer.appendChild(userAvatar);
+          }
+
+          messagesContainer.appendChild(messageContainer);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function sendMessage() {
+          const message = `${userInput.value.trim()}`;
+          if (message === '') return;
+
+          addMessage(message, 'user');
+          userInput.value = '';
+
+          // Hide welcome content
+          welcomeSection.style.display = 'none';
+
+          fetch('http://127.0.0.1:5000/api/send_message', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userMessage: message })
+          })
+          .then(response => response.json())
+          .then(data => {
+            const botMessage = `${data.response}`;
+            addMessage(botMessage, 'bot');
+          })
+          .catch(error => {
+            console.error('Error sending message to backend:', error);
+            addMessage('Error: Unable to get a response from the backend.', 'bot');
+          });
+        }
+
+        function handleButtonClick(presetMessage) {
+          userInput.value = presetMessage;
+          sendMessage();
+        }
+
+        window.navigateHome = function() {
+          window.location.href = "/templates/index.html";
+        };
+
+        window.handleButtonClick = handleButtonClick;
+        window.sendMessage = sendMessage;
+      });
+    </script>
+  </body>
+</html>
