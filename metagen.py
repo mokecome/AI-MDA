@@ -129,16 +129,11 @@ def append_content_in_doc(folder_id, doc_id, dict_list, upload_to_google_drive=F
         # 獲取文檔的當前长度
         document = docs_service.documents().get(documentId=doc_id).execute()
         end_of_doc = document['body']['content'][-1]['endIndex'] - 1  
-        #修改產生格式
-        report=''
-        for j in dict_list:
-             if j['role']=='assistant':
-                 report=report+j['content']+'\n'
         # 追加Q-A内容到文檔
         requests = [{
             'insertText': {
                 'location': {'index': end_of_doc},
-                'text': report + '\n\n'   # 格式
+                'text': json_string + '\n\n'   # 格式
             }
         }]
         docs_service.documents().batchUpdate(documentId=doc_id, body={'requests': requests}).execute()
@@ -338,7 +333,7 @@ class InterProject():
 class ChatMessages():
     def __init__(self, 
                  system_content_list=[], 
-                 question='',
+                 question='請先介紹telco_db數據庫裡的數據表',
                  tokens_thr=None, 
                  project=None):
 
@@ -388,8 +383,7 @@ class ChatMessages():
             all_tokens_count += system_tokens_count
         
         # 創建首次對话消息
-        if question != '':
-            history_messages = [{"role": "user", "content": question}]
+        history_messages = [{"role": "user", "content": question}]
         # 創建全部消息列表
         messages_all += history_messages
         user_tokens_count = len(encoding.encode(question))
@@ -451,7 +445,7 @@ class ChatMessages():
             self.messages.append(new_messages)
             self.tokens_count += len(self.encoding.encode(str(new_messages)))
         elif type(new_messages.content) is str:
-            self.messages.append({'role':new_messages.role,'content':new_messages.content})
+            self.messages.append({'role': new_messages.role, 'content': new_messages.content})
             self.tokens_count += len(self.encoding.encode(str(new_messages)))
 
 
@@ -612,7 +606,7 @@ def python_inter(py_code, g='globals()'):
             # 若不是重復賦值，則報錯
             return f"代碼執行時報錯{e}"
         
-p1 = InterProject(project_name='測試項目', part_name='測試文檔',upload_to_google_drive =True)        
+p1 = InterProject(project_name='測試項目', part_name='json文檔',upload_to_google_drive =True)        
 def upload_image_to_drive(figure, folder_id = p1.folder_id):
     folder_id = folder_id 
     creds = Credentials.from_authorized_user_file('token.json')
@@ -896,7 +890,6 @@ def get_chat_response(model,
     # is_task_decomposition=True时，不再重新創建response_message
     if not is_task_decomposition:
         # 先獲取單次大模型調用结果
-        # 此时response_message是大模型調用返回的message
         response_message = get_gpt_response(model=model, 
                                             messages=messages, 
                                             available_functions=available_functions,
@@ -915,7 +908,7 @@ def get_chat_response(model,
         if response_message.function_call:
             print("當前任務無需拆解，可以直接運行。")
 
-    # 若本次调用是由修改对话需求产生，则按照参数设置删除原始message中的若干条消息
+    # 若本次调用是由修改对话需求产生，则按照参数设置删除原始message中的消息
     # 需要注意的是，删除中间若干条消息，必须在创建完新的response_message之后再执行
     if delete_some_messages:
         for i in range(delete_some_messages):
@@ -1107,10 +1100,8 @@ class MateGen():
         
         if '4o' in model:
             tokens_thr = 1100000
-        elif '4-0613' in model:
-            tokens_thr = 7000
         else:
-            tokens_thr = 1100000
+            tokens_thr = 7000
             
         self.tokens_thr = tokens_thr
         

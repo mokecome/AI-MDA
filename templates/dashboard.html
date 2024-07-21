@@ -32,39 +32,39 @@
         </nav>
       </header>
       <main class="flex-grow container mx-auto px-4 py-8 pt-16">
-        <h1 class="text-3xl font-bold text-center mb-2">Dashboard</h1>
-        <p class="text-center text-gray-600 mb-8">醫院病患資料-數據分析資料視覺化</p>
+        <h1 class="text-4xl font-bold text-center mb-2">Dashboard</h1>
+        <p class="text-1xl text-center text-gray-600 mb-8">醫院病患資料-數據分析資料視覺化</p>
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div class="bg-white p-4 rounded-lg shadow col-span-2" id="chat1">
-            <p class="text-gray-600">總病患數量(B/C/BC)</p>
-            <p class="text-2xl font-bold">{{ totalPatients }}</p>
+          <div class="bg-white p-4 rounded-lg shadow col-span-2 " id="chat1">
+            <p class="text-gray-700 ml-6">總病患數量(B肝/C肝/B+C肝)</p>
+            <p class="text-gray-700 text-4xl font-bold mr-10 text-right">{{ totalPatients }}</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow">
-            <p class="text-gray-600">B肝病患數</p>
-            <p class="text-2xl font-bold">{{ bPatients }}</p>
+          <div class="bg-white p-4 rounded-lg shadow text-center">
+            <p class="text-gray-700">B肝病患人數</p>
+            <p class="text-gray-700 text-3xl font-bold mt-2">{{ bPatients }}</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow">
-            <p class="text-gray-600">C肝病患數</p>
-            <p class="text-2xl font-bold">{{ cPatients }}</p>
+          <div class="bg-white p-4 rounded-lg shadow text-center">
+            <p class="text-gray-700">C肝病患人數</p>
+            <p class="text-gray-700 text-3xl font-bold mt-2">{{ cPatients }}</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow">
-            <p class="text-gray-600">B/C肝病患數</p>
-            <p class="text-2xl font-bold">{{ bcPatients }}</p>
+          <div class="bg-white p-4 rounded-lg shadow text-center">
+            <p class="text-gray-700">B/C肝病患人數</p>
+            <p class="text-gray-700 text-3xl font-bold mt-2">{{ bcPatients }}</p>
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <div class="bg-white p-4 rounded-lg shadow">
-            <p class="text-gray-600">個案轉出數/比率</p>
-            <p class="text-2xl font-bold">{{ transferredCases }}</p>
+          <div class="bg-white p-4 rounded-lg shadow ">
+            <p class="text-gray-700 ml-6">個案轉出數量/整體比率(%)</p>
+            <p class="text-4xl font-bold mr-10 text-right text-gray-700">{{ transferredCases }}</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow">
-            <p class="text-gray-600">已結案數/比率</p>
-            <p class="text-2xl font-bold">{{ closedCases }}</p>
+          <div class="bg-white p-4 rounded-lg shadow ">
+            <p class="text-gray-700 ml-6">已結案數量/整體比率(%)</p>
+            <p class="text-4xl font-bold mr-10 text-right text-gray-700">{{ closedCases }}</p>
           </div>
         </div>
         <div class="bg-white p-4 rounded-lg shadow mb-8">
-          <p class="text-gray-600 mb-4">數量</p>
-          <div class="flex justify-center mb-8">
+          <p class="text-gray-700 flex items-center justify-center font-bold">B肝/C肝/B+C肝人數表</p>
+          <div class="flex justify-center mb-8 ">
             <iframe src="{{ url_for('static', filename='mixed_bar.html') }}" class="w-full md:w-10/12 lg:w-8/12" style="height: 500px;" frameborder="0"></iframe>
           </div>
           <div class="flex justify-center mb-8">
@@ -73,7 +73,12 @@
           <div class="flex justify-center">
             <iframe src="{{ url_for('static', filename='multiple_bar.html') }}" class="w-full md:w-10/12 lg:w-8/12" style="height: 500px;" frameborder="0"></iframe>
           </div>
-        </div>        
+        </div>
+        <div class="flex items-center justify-center">
+          <form class="bg-black text-white px-8 py-3 rounded"  action="/report_download" enctype='multipart/form-data' method='POST'>
+              <input type="submit" value="一鍵下載PPT">
+          </form>
+       
         </div>
       </main>
       <footer class="bg-white py-4">

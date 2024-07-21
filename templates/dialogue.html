@@ -14,11 +14,19 @@
     />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+      .header-fixed {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+      }
       body {
         font-family: "Noto Sans TC", sans-serif;
         padding-bottom: 120px;
       }
-
+      .welcome-section {
+        padding-top: 4rem; 
+      }
       .fixed-input-container {
         position: fixed;
         bottom: 50px;
@@ -37,7 +45,7 @@
         background-color: white;
       }
       .fixed-sidebar {
-        position: absolute;
+        position: fixed;
         top: 120px; 
         right: 20px;
         width: 20%;
@@ -46,6 +54,7 @@
         display: flex;
         align-items: flex-start;
         margin-bottom: 1rem;
+        max-width: calc(100% - 22%);
       }
 
       .message-container.user {
@@ -98,12 +107,16 @@
       .duration-300 {
         transition-duration: 300ms;
       }
+      #messages-container {
+        margin-top: 4rem; /* 确保消息容器在固定头部下方 */
+      }
+      
     </style>
   </head>
 
   <body>
     <div class="min-h-screen flex flex-col" id="app">
-      <header class="flex items-center justify-between p-4 bg-gray-100 w-full top-0 z-10 h-12 shadow-md">
+      <header class="header-fixed flex items-center justify-between p-4 bg-gray-100 h-12 shadow-md">
         <div class="flex items-center pl-2">
           <img src="static/logo.png" alt="AI-MDA Logo" class="h-9 w-auto">
         </div>
@@ -112,8 +125,8 @@
           <a class="text-gray-700" href="#">About</a>
         </nav>
       </header>
-      <main class="flex-grow container mx-auto px-4 py-8">
-        <div class="text-center mb-8" id="welcome-section">
+      <main class="main-content flex-grow container mx-auto px-4 py-8">
+        <div class="text-center mb-8 welcome-section" id="welcome-section">
           <h1 class="text-4xl font-bold mb-2">Welcome to AI-MDA !</h1>
           <p class="text-gray-600">
             歡迎來到AI醫療數據自動化生成器，我們將藉由AI幫助您快速整理醫療數據。
@@ -121,11 +134,14 @@
         </div>
         <div id="messages-container"></div>
         <aside class="fixed-sidebar bg-gray-200 p-4 rounded-lg shadow-md">
-          <h2 class="text-lg font-bold mb-4">常用標籤</h2>
+          <h2 class="text-lg font-bold mb-4">常見問題</h2>
           <div class="space-y-2">
-            <button onclick="handleButtonClick('男女比例')" class="bg-white px-4 py-2 rounded-full shadow-md">男女比例</button>
-            <button onclick="handleButtonClick('B型肝炎人數')" class="bg-white px-4 py-2 rounded-full shadow-md">B型肝炎人數</button>
-            <button onclick="handleButtonClick('來客率')" class="bg-white px-4 py-2 rounded-full shadow-md">來客率</button>
+            <button onclick="handleButtonClick('超過一年未回診比例')" class="bg-white px-4 py-2 rounded-full shadow-md">超過一年未回診比例</button>
+            <button onclick="handleButtonClick('一年回診2次人數')" class="bg-white px-4 py-2 rounded-full shadow-md">一年回診2次人數</button>
+            <button onclick="handleButtonClick('65歲以上肝硬化數')" class="bg-white px-4 py-2 rounded-full shadow-md">65歲以上肝硬化數</button>
+            <button onclick="handleButtonClick('輕/中/重度脂肪肝人數')" class="bg-white px-4 py-2 rounded-full shadow-md">輕/中/重度脂肪肝人數</button>
+            <button onclick="handleButtonClick('不同年齡層肝硬化比例')" class="bg-white px-4 py-2 rounded-full shadow-md">不同年齡層肝硬化比例</button>
+            <button onclick="handleButtonClick('完成腹部超音波比例')" class="bg-white px-4 py-2 rounded-full shadow-md">完成腹部超音波比例</button>
           </div>
         </aside>
       </main>
@@ -135,11 +151,9 @@
           <i class="fas fa-arrow-up"></i>
         </button>
       </div>
-      <footer class="footer py-4 shadow-md">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-          <span class="text-gray-600">中文(繁體)</span>
-          <span class="text-gray-600">© 2024 Meeting Assistant, All Rights Reserved.</span>
-        </div>
+      <footer class="footer py-4 flex justify-between items-center p-4 border-t text-sm">
+          <div class="text-gray-600 pl-2">中文(繁體)</div>
+          <div class="text-gray-600 pr-2">© 2024 Meeting Assistant, All Rights Reserved.</span>
       </footer>
     </div>
     <script>

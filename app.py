@@ -15,8 +15,7 @@ api_version = config['AzureOpenAI']['api_version']
 
 print("azure_endpoint : " + azure_endpoint)
 
-
-
+# Flask 設定
 app = Flask(__name__)
 CORS(app) 
 
@@ -28,12 +27,13 @@ client = AzureOpenAI(
         api_version=api_version,
     )
 
-
 #####################################################################
     
 from metagen import *
 import pandas as pd
 from tools import tools_content
+from custom_prompt import *
+from ppt_write import *
 with open('datafile/liver_medical_data_dictionary.md', 'r', encoding='utf-8') as f:
     md_content = f.read()  
 with open('datafile/DA2 instruct.md', 'r', encoding='utf-8') as f: #數據分析報告格式
@@ -41,26 +41,44 @@ with open('datafile/DA2 instruct.md', 'r', encoding='utf-8') as f: #數據分析
 
 functions=tools_content
 
-p1 = InterProject(project_name='測試項目', part_name='測試文檔',upload_to_google_drive =True)
+p1 = InterProject(project_name='測試項目', part_name='json文檔',upload_to_google_drive =True)
+report = InterProject(project_name='測試項目', part_name='分析報告文檔',upload_to_google_drive =True)
 print(p1.folder_id)
-last_message = p1.get_doc_content()
-if last_message == '':
-    #agent實例
-    mategen_test = MateGen(api_key = api_key,      # 设置api_key
+
+mategen_test = MateGen(api_key = api_key,      # 设置api_key
                     system_content_list=[md_content,report_content],
                     model ="4o_nita_20240702",           # 设置模型
                     available_functions=AvailableFunctions(functions_list=[sql_inter,extract_data,python_inter,fig_inter],functions=functions, function_call="auto")
-                    ,project=p1)
-else:
-    mategen_test = MateGen(api_key = api_key,      # 设置api_key
-                    system_content_list=[md_content,report_content],
-                    model ="4o_nita_20240702",           # 设置模型
-                    available_functions=AvailableFunctions(functions_list=[sql_inter,extract_data,python_inter,fig_inter],functions=functions, function_call="auto")
-                    ,project=p1, 
-                    messages=last_message,
-                    #,is_enhanced_mode=True
+                    ,project=p1,
+                    #is_enhanced_mode=True
                     )
 
+mategen_report = MateGen(api_key = api_key,      # 设置api_key
+                    system_content_list=[md_content,report_content],
+                    model ="4o_nita_20240702",           # 设置模型
+                    available_functions=AvailableFunctions(functions_list=[sql_inter,extract_data,python_inter,fig_inter],functions=functions, function_call="auto")
+                    ,project=report)
+
+def append_doc_googledrive(folder_id=report.folder_id, doc_id=report.doc_id, dict_string=""):
+    rep=''
+    for j in dict_string:
+         if j['role']=='assistant':
+            rep=rep+j['content']+'\n'
+    creds = Credentials.from_authorized_user_file('token.json')
+    drive_service = build('drive', 'v3', credentials=creds)
+    docs_service = build('docs', 'v1', credentials=creds)
+
+    # 獲取文檔的當前长度
+    document = docs_service.documents().get(documentId=doc_id).execute()
+    end_of_doc = document['body']['content'][-1]['endIndex'] - 1  
+    # 追加内容到文檔
+    requests = [{
+            'insertText': {
+                'location': {'index': end_of_doc},
+                'text': rep + '\n\n'   # 格式
+            }
+        }]
+    docs_service.documents().batchUpdate(documentId=doc_id, body={'requests': requests}).execute()
 ##########################################################################
 # 确保 recording 目录存在
 if not os.path.exists('recording'):
@@ -70,44 +88,61 @@ if not os.path.exists('recording'):
 def index():
     return render_template('index.html')
 
-'''
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     file = request.files['filename']
-    if file :   # 確認有檔案'
-        os.makedirs('./' ,exist_ok=True)
-        #檢查當前目錄下的文件是否有相同文件名，如果有，比較是否內容相同，如果相同，刪除舊文件
-        df = pd.read_excel('./'+file.filename)
-        file.save(os.path.join('./', file.filename))
+    if file :  
+        os.makedirs('./data' ,exist_ok=True)
+        file.save(os.path.join('./data', file.filename))
         print('更新')
     else:
         errorMsg='僅允許上傳excel檔案'
-    #返回文件
-    try:
-        #讀取資料夾名為filename的文件
-        #filename = request.args.get('filename')
-        df2 = pd.read_excel('data/data.xlsx')
-        if not df.equals(df2):
-            p1.clear_content()
-            for q in ['請幫我介紹telco_db數據庫的資料表','接下來請圍繞已經讀取到Python環境中的表來進行字段類型的設置，請根據每個字段的業務解釋
-            ，來調整字段類型。若要調整字段類型，直接在原始表格上進行修改即可。'
-            ,'分析telco_db数据库中的表，帮我梳理一个数据分析的基本思路','請幫我產生一個數據分析報告']:
-                mategen_test.chat(question=q)
-            mategen_test.upload_messages()
+    return render_template('index.html')
 
-        df.to_excel('data/data.xlsx',index=False)
 
-    except:
-        pass
-'''  
 
 
 @app.route('/dashboard')
 def dashboard():
-    df = pd.read_excel('data.xlsx')
-    #資料清整
-    df = df.drop_duplicates()
-    return render_template('dashboard.html')
+    
+    test_b = pd.read_excel("data/data.xlsx",sheet_name='B肝帶原')
+    test_c = pd.read_excel("data/data.xlsx",sheet_name='C肝帶原')
+    test_bc = pd.read_excel("data/data.xlsx",sheet_name='B+C肝帶原')
+
+    def convert_to_percentage(decimal):
+        """Converts a decimal value to a percentage string."""
+        return f"{decimal * 100:.1f}%"
+
+    lenb=len(test_b['狀態'])
+    lenc=len(test_c['狀態'])
+    lenbc=len(test_bc['狀態'])
+
+    b_transfer = test_b['狀態'].value_counts().get('轉出',0)
+    c_transfer = test_c['狀態'].value_counts().get('轉出',0)
+    bc_transfer = test_bc['狀態'].value_counts().get('轉出',0)
+
+    total_patient = lenb+lenc+lenbc
+    total_trnasfer = b_transfer+c_transfer+bc_transfer
+    total_transfer_rate = (total_trnasfer)/(total_patient)
+    total_transfer_rate_per = convert_to_percentage(total_transfer_rate)
+    str_total_transfer = f"{total_trnasfer}/{total_transfer_rate_per}" 
+    
+
+    b_close = test_b['狀態'].value_counts().get('轉出結案',1)
+    c_close = test_c['狀態'].value_counts().get('轉出結案',1)
+    bc_close = test_bc['狀態'].value_counts().get('轉出結案',1)
+    
+    total_close = b_close+c_close+bc_close
+    total_close_rate = (total_close)/(total_patient)
+    total_close_rate_per = convert_to_percentage(total_close_rate)
+    str_total_close = f"{total_close}/{total_close_rate_per}"
+    global numeric_prompt
+    numeric_prompt=numeric_prompt.format(total_patient,lenb,lenc,lenbc,total_trnasfer,total_close
+                                         ,'400人，佔整體比例的10%。這可能是因為多種原因造成的，例如對治療效果不滿意或交通不便。','1200人。這表明有相當一部分患者需要頻繁檢查來監控病情。','800人。這部分患者可能因年齡增加而面臨較高的肝病風險，需要特別關注。','3:2 B肝患者有2000人。這表明男性患B肝的比例高於女性。另外，B+C肝患者中，男女比例也是3:2。男性占60%，女性占40%，反映了性別在肝病中的差異。')
+    print(numeric_prompt)
+    return render_template('dashboard.html',totalPatients = total_patient, bPatients = lenb, cPatients = lenc, bcPatients = lenbc, transferredCases = str_total_transfer,closedCases =str_total_close)
+
 
 @app.route('/talk')
 def talk():
@@ -126,14 +161,24 @@ def dialogue():
 def send_message():
     data = request.json
     user_message = data.get('userMessage')
-    print("user_message : " + user_message)
 
     # 如果不在知識庫中   如果在知識庫
     try:
-        mategen_test.chat(question=user_message)
-        mategen_test.upload_messages()
-        print(mategen_test.messages.history_messages[-1]['content'])
-        return jsonify({"response": str(mategen_test.messages.history_messages[-1]['content'])})
+        #mategen_test.chat(question=user_message)
+        #mategen_test.upload_messages()
+        #print(mategen_test.messages.history_messages[-1]['content'])
+        #append_doc_googledrive(folder_id=report.folder_id, doc_id=report.doc_id, dict_string=mategen_test.messages.history_messages)
+        print(numeric_prompt)
+        completion = client.chat.completions.create(
+            model="4o_nita_20240702",  
+            messages=[{"role": "system", "content": precise_prompt.format(mategen_test.messages.history_messages[-1]['content']+';'+numeric_prompt)}
+                      ,{"role": "user", "content":user_message}
+                    ],
+            temperature=0.2,
+            top_p=0.90,
+        )
+        response_text = completion.choices[0].message.content
+        return jsonify({"response": str(response_text)})
     except requests.exceptions.RequestException as e:
         print(f"Connection error: {e}")
         return jsonify({"error": "Connection error. Please check your network and API settings."}), 500
@@ -186,28 +231,12 @@ def speech_to_text():
         return jsonify({"error": "Failed to recognize speech"}), 500
 
 
-    # 调用 Azure OpenAI API 进行文本处理
-    client = AzureOpenAI(
-        azure_endpoint=azure_endpoint,
-        api_key=api_key,
-        api_version=api_version
-    )
-    #report_prompt  
-    last_message = p1.get_doc_content()
-    message_text = [
-        {"role": "system", "content": "你是一個善於數據分析的專家。請根據以下內容生成合適的回應。"+last_message},
-        {"role": "user", "content": user_text}
-    ]
-
     completion = client.chat.completions.create(
         model="4o_nita_20240702",  
-        messages=message_text,
-        temperature=0.7,
-        max_tokens=1500,
+        messages=[{"role": "system", "content": voice_prompt.format(numeric_prompt)},
+                  {"role": "user", "content": user_text}],
+        temperature=0.2,
         top_p=0.90,
-        frequency_penalty=0,
-        presence_penalty=0,
-        stop=None
     )
     response_text = completion.choices[0].message.content
     print(response_text)
@@ -235,6 +264,46 @@ def speech_to_text():
 @app.route('/recording/<filename>', methods=['GET'])
 def get_audio_file(filename):
     return send_from_directory('recording', filename)
+
+
+
+@app.route('/report_download', methods=['POST'])
+def report_download():
+    '''更新報告
+    report_message = report.get_doc_content()     
+    message_text = [
+        {"role": "system", "content": report_prompt.format(report_message+'\n'+numeric_prompt)},
+        {"role": "user", "content": '請給出結論'}
+    ]
+
+    completion = client.chat.completions.create(
+        model="4o_nita_20240702",  
+        messages=message_text,
+        temperature=0.2,
+        top_p=0.90,
+    )
+    response_text = completion.choices[0].message.content
+    print(response_text)
+    '''
+    # 將報告文檔下載到本地
+    os.system('python ppt_write.py')
+    #上傳到 Google Drive
+    from googleapiclient.http import MediaFileUpload
+    creds = Credentials.from_authorized_user_file('token.json')
+    drive_service = build('drive', 'v3', credentials=creds)
+    file_path = '本月肝炎個管成效.pptx'
+    file_name = '本月肝炎個管成效.pptx'
+    ##############創建媒体文件上傳對象############################################
+    file_metadata = {'name': file_name}
+    media = MediaFileUpload(file_path, mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+    file =  drive_service.files().create(body=file_metadata, media_body=media, fields='id,webContentLink').execute()
+    ################開啟網頁############################################################
+    #import webbrowser
+    #webbrowser.open(file["webContentLink"])
+    return send_from_directory('', '本月肝炎個管成效.pptx', as_attachment=True)
+   
+
+
 
 if __name__ == "__main__":
     app.run(port=5000)
