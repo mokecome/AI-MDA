@@ -9,7 +9,7 @@ prs = Presentation()
 
 # 背景與數據圖片路徑
 folder_path='ppt'
-front_page = f"{folder_path}/front_page.png"
+front_page = f"{folder_path}/Front_page.png"
 bg_image_path = f"{folder_path}/PPT_BG.jpg"
 
 
@@ -70,7 +70,7 @@ title_format.size = Pt(36)
 title_format.color.rgb = RGBColor(0, 0, 0)  # 黑色字體
 
 # 添加B_C_BC肝人數表.png圖片到第4頁並縮小10%
-img_path = "./ppt/B_C_BC肝人數表.png"  # 圖片路徑
+img_path = f"{folder_path}/B_C_BC.png"  # 圖片路徑
 height = Inches(7.5)  # 原高度
 width = Inches(11.25)  # 原寬度
 
@@ -104,7 +104,7 @@ title_format.color.rgb = RGBColor(0, 0, 0)  # 黑色字體
 
 
 # 收案男女比例.png圖片到第5頁並縮小10%
-img_path = f"./{folder_path}/收案男女比例.png"  # 圖片路徑
+img_path = f"./{folder_path}/fm_ratio.png"  # 圖片路徑
 height = Inches(6.6)  # 原高度
 width = Inches(11.5)  # 原寬度
 
@@ -137,7 +137,7 @@ title_format.size = Pt(36)
 title_format.color.rgb = RGBColor(0, 0, 0)  # 黑色字體
 
 # 收案男女比例.png圖片到第5頁並縮小10%
-img_path = f"./{folder_path}/個案追蹤管理分析.png"  # 圖片路徑
+img_path = f"./{folder_path}/manage.png"  # 圖片路徑
 height = Inches(7.2)  # 原高度
 width = Inches(11.5)  # 原寬度
 

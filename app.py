@@ -137,11 +137,17 @@ def dashboard():
     total_close_rate = (total_close)/(total_patient)
     total_close_rate_per = convert_to_percentage(total_close_rate)
     str_total_close = f"{total_close}/{total_close_rate_per}"
+    
+    # Calculating rates
+    b_rate_per = convert_to_percentage(lenb / total_patient)
+    c_rate_per = convert_to_percentage(lenc / total_patient)
+    bc_rate_per = convert_to_percentage(lenbc / total_patient)
+    
     global numeric_prompt
     numeric_prompt=numeric_prompt.format(total_patient,lenb,lenc,lenbc,total_trnasfer,total_close
-                                         ,'400人，佔整體比例的10%。這可能是因為多種原因造成的，例如對治療效果不滿意或交通不便。','1200人。這表明有相當一部分患者需要頻繁檢查來監控病情。','800人。這部分患者可能因年齡增加而面臨較高的肝病風險，需要特別關注。','3:2 B肝患者有2000人。這表明男性患B肝的比例高於女性。另外，B+C肝患者中，男女比例也是3:2。男性占60%，女性占40%，反映了性別在肝病中的差異。')
+                                         ,'有400人，佔整體比例的10%。這可能是因為多種原因造成的，例如對治療效果不滿意或交通不便。','1200人。這表明有相當一部分患者需要頻繁檢查來監控病情。','800人。這部分患者可能因年齡增加而面臨較高的肝病風險，需要特別關注。','3:2 B肝患者有2000人。這表明男性患B肝的比例高於女性。另外，B+C肝患者中，男女比例也是3:2。男性占60%，女性占40%，反映了性別在肝病中的差異。')
     print(numeric_prompt)
-    return render_template('dashboard.html',totalPatients = total_patient, bPatients = lenb, cPatients = lenc, bcPatients = lenbc, transferredCases = str_total_transfer,closedCases =str_total_close)
+    return render_template('dashboard.html',totalPatients = total_patient, bPatients = lenb, bPatients_rate = b_rate_per, cPatients = lenc , cPatients_rate = c_rate_per, bcPatients = lenbc, bcPatients_rate=bc_rate_per , transferredCases = str_total_transfer,closedCases =str_total_close)
 
 
 @app.route('/talk')
@@ -164,10 +170,11 @@ def send_message():
 
     # 如果不在知識庫中   如果在知識庫
     try:
-        #mategen_test.chat(question=user_message)
-        #mategen_test.upload_messages()
-        #print(mategen_test.messages.history_messages[-1]['content'])
-        #append_doc_googledrive(folder_id=report.folder_id, doc_id=report.doc_id, dict_string=mategen_test.messages.history_messages)
+        if '回診比例' in user_message:
+            mategen_test.chat(question=user_message)
+            #mategen_test.upload_messages()
+            print(mategen_test.messages.history_messages[-1]['content'])
+            #append_doc_googledrive(folder_id=report.folder_id, doc_id=report.doc_id, dict_string=mategen_test.messages.history_messages)
         print(numeric_prompt)
         completion = client.chat.completions.create(
             model="4o_nita_20240702",  
@@ -214,6 +221,7 @@ def speech_to_text():
         
     try:
         speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
+        speech_config.speech_recognition_language = "zh-CN"
         audio_input = speechsdk.AudioConfig(filename=output_path)
         speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
         
@@ -222,6 +230,7 @@ def speech_to_text():
             user_text = result.text
         else:
             return jsonify({"error": "Speech not recognized"}), 400
+        print(user_text)
         
         # 重置 audio_input 和 speech_recognizer
         audio_input = None
@@ -230,10 +239,10 @@ def speech_to_text():
         print(f"Error during speech recognition: {e}")  # 打印详细错误信息
         return jsonify({"error": "Failed to recognize speech"}), 500
 
-
+    
     completion = client.chat.completions.create(
         model="4o_nita_20240702",  
-        messages=[{"role": "system", "content": voice_prompt.format(numeric_prompt)},
+        messages=[{"role": "system", "content": precise_prompt.format(numeric_prompt)},
                   {"role": "user", "content": user_text}],
         temperature=0.2,
         top_p=0.90,
@@ -287,6 +296,7 @@ def report_download():
     '''
     # 將報告文檔下載到本地
     os.system('python ppt_write.py')
+    '''
     #上傳到 Google Drive
     from googleapiclient.http import MediaFileUpload
     creds = Credentials.from_authorized_user_file('token.json')
@@ -300,6 +310,7 @@ def report_download():
     ################開啟網頁############################################################
     #import webbrowser
     #webbrowser.open(file["webContentLink"])
+    '''
     return send_from_directory('', '本月肝炎個管成效.pptx', as_attachment=True)
    
 

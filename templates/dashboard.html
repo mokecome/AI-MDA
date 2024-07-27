@@ -39,17 +39,26 @@
             <p class="text-gray-700 ml-6">總病患數量(B肝/C肝/B+C肝)</p>
             <p class="text-gray-700 text-4xl font-bold mr-10 text-right">{{ totalPatients }}</p>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow text-center">
-            <p class="text-gray-700">B肝病患人數</p>
-            <p class="text-gray-700 text-3xl font-bold mt-2">{{ bPatients }}</p>
+          <div class="bg-white p-4 rounded-lg shadow ">
+            <p class="text-gray-700 ml-2 mb-1 text-left">B肝病患人數/比率(%)</p>
+            <div class="flex justify-end">
+              <p class="text-gray-700 text-3xl font-bold mr-2">{{ bPatients }}</p>
+              <p class="text-gray-700 text-1xl mt-3"> / {{ bPatients_rate }}</p>
+            </div>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow text-center">
-            <p class="text-gray-700">C肝病患人數</p>
-            <p class="text-gray-700 text-3xl font-bold mt-2">{{ cPatients }}</p>
+          <div class="bg-white p-4 rounded-lg shadow ">
+            <p class="text-gray-700 ml-2 mb-1 text-left">C肝病患人數/比率(%)</p>
+            <div class="flex justify-end">
+              <p class="text-gray-700 text-3xl font-bold mr-2">{{ cPatients }}</p>
+              <p class="text-gray-700 text-1xl mt-3"> / {{ cPatients_rate }}</p>
+            </div>
           </div>
-          <div class="bg-white p-4 rounded-lg shadow text-center">
-            <p class="text-gray-700">B/C肝病患人數</p>
-            <p class="text-gray-700 text-3xl font-bold mt-2">{{ bcPatients }}</p>
+          <div class="bg-white p-4 rounded-lg shadow ">
+            <p class="text-gray-700 ml-2 mb-1 text-left">B/C肝病患人數/比率(%)</p>
+            <div class="flex justify-end">
+              <p class="text-gray-700 text-3xl font-bold mr-2">{{ bcPatients }}</p>
+              <p class="text-gray-700 text-1xl mt-3"> / {{ bcPatients_rate }}</p>
+            </div>
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -78,18 +87,12 @@
           <form class="bg-black text-white px-8 py-3 rounded"  action="/report_download" enctype='multipart/form-data' method='POST'>
               <input type="submit" value="一鍵下載PPT">
           </form>
-       
         </div>
       </main>
-      <footer class="bg-white py-4">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-          <span class="text-gray-600">中文(繁體)</span>
-          <span class="text-gray-600"
-            >© 2024 Meeting Assistant, All Rights Reserved.</span
-          >
-        </div>
+      <footer class="flex justify-between items-center p-4 border-t text-sm">
+        <div class="text-gray-600 pl-2">中文(繁體)</div>
+        <div class="text-gray-600 pr-2">© 2024 Meeting Assistant. All Rights Reserved.</div>
       </footer>
-    </div>
     <script>
         const { createApp } = Vue;
 
@@ -107,7 +110,7 @@
 
           methods: {
             navigateHome() {
-              window.location.href = "/templates/index.html";
+              window.location.href = "/";
             },
           }
         }).mount("#app");
